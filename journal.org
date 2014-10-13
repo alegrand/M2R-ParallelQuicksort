@@ -44,6 +44,13 @@ The code is quite simple at the moment and can be run in the following way:
 #+begin_src
 ./src/parallelQuicksort [1000000]
 #+end_src
+When run, the code executes initializes an array of the size given in
+argument (1000000 by default) with random integer values and sorts it
+using:
+1. a custom sequential implementation;
+2. a custom parallel implementation;
+3. the libc qsort function.
+Times are reported in seconds.
 * Experimental Reports
 ** 2014-10-13
 *** Initial code design
@@ -81,4 +88,110 @@ The code is quite simple at the moment and can be run in the following way:
   : Parallel quicksort took: 0.176365 sec.
   : Built-in quicksort took: 0.244716 sec.
 
+*** First series of experiments
+Let's try to see how the three algorithms behave when changing the 
+array size. Since one measurement is not enough, I run the code 5
+times in a row.
+#+begin_src sh foo :results output :exports both :tangle scripts/run_benchmarking.sh
+  OUTPUT_DIRECTORY=data/`hostname`_`date +%F`
+  mkdir -p $OUTPUT_DIRECTORY
+  OUTPUT_FILE=$OUTPUT_DIRECTORY/measurements_`date +%R`.txt
 
+  touch $OUTPUT_FILE
+  for i in 100 1000 10000 100000 1000000; do
+      for rep in `seq 1 5`; do
+          echo "Size: $i" >> $OUTPUT_FILE;
+          ./src/parallelQuicksort $i >> $OUTPUT_FILE;
+      done ;
+  done
+#+end_src
+I obtained the following [[file:data/sama_2014-10-13/measurements_03:47.txt][output]].
+
+*** A simple plot with R
+Here is a simple script to parse the results:
+#+begin_src perl :results output raw :exports both :tangle scripts/csv_quicksort_extractor.pl
+  use strict;
+
+  my($line);
+  my($size);
+
+  print "Size, Type, Time\n" ;
+  while($line=<>) {
+      chomp $line;
+      if($line =~/^Size: ([\d\.]*)$/) {
+          $size = $1;
+          next;
+      } 
+      if($line =~/^(.*) quicksort.*: ([\d\.]*) sec.$/) {
+          print "$size, \"$1\", $2\n" ;
+          next;
+      } 
+  }
+#+end_src
+
+I can then simply parse my data with the following command:
+
+#+begin_src sh :results output :exports both 
+perl scripts/csv_quicksort_extractor.pl < data/sama_2014-10-13/measurements_03\:47.txt > data/sama_2014-10-13/measurements_03\:47.csv
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file data/sama_2014-10-13/measurements_03:47.png :exports both :width 600 :height 400 :session
+  df <- read.csv("data/sama_2014-10-13/measurements_03:47.csv",header=T)
+  plot(df$Size,df$Time,col=c("red","blue","green")[df$Type])
+#+end_src
+
+#+RESULTS:
+[[file:data/sama_2014-10-13/measurements_03:47.png]]
+
+Well, this is not particularly nice and some may not know/like R.
+*** A simple plot with gnuplot
+So let's try to parse in an other way and use gnuplot:
+
+#+begin_src perl :results output raw :exports both :tangle scripts/csv_quicksort_extractor2.pl
+  use strict;
+
+  my($line);
+  my($size);
+  my($seq,$par,$libc);
+  print "Size, Seq, Par, Libc\n" ;
+  while($line=<>) {
+      chomp $line;
+      if($line =~/^Size: ([\d\.]*)$/) {
+          $size = $1;
+          next;
+      } 
+      if($line =~/^Sequential quicksort.*: ([\d\.]*) sec.$/) {
+          $seq=$1; next;
+      } 
+      if($line =~/^Parallel quicksort.*: ([\d\.]*) sec.$/) {
+          $par=$1; next;
+      } 
+      if($line =~/^Built-in quicksort.*: ([\d\.]*) sec.$/) {
+          $libc=$1; 
+          print "$size, $seq, $pqr, $libc\n";
+          next;
+      }
+  }
+#+end_src
+
+#+begin_src sh :results output :exports both 
+  FILENAME="data/sama_2014-10-13/measurements_03:47"
+  perl scripts/csv_quicksort_extractor2.pl < "$FILENAME.txt" > "${FILENAME}_wide.csv"
+  echo "
+    set terminal png size 600,400 
+    set output '${FILENAME}_wide.png'
+    set datafile separator ','
+    set key autotitle columnhead
+    plot '${FILENAME}_wide.csv' using 1:2 with linespoints, '' using 1:3 with linespoints, '' using 1:4 with linespoints
+  " | gnuplot
+  echo [[file:${FILENAME}_wide.png]]
+#+end_src
+
+#+RESULTS:
+: [[file:data/sama_2014-10-13/measurements_03:47_wide.png]]
+
+Well, I'm not sure it is nicer but I have lines. A first crude
+analysis seems to reveal the the parallel version is worth it for
+arrays larger than 400000.
