@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+#+STARTUP: overview indent inlineimages
+#+TITLE:       Laboratory Notebook for a Multi-Threaded Version of Quicksort
+#+AUTHOR:      Arnaud Legrand
+#+LANGUAGE:    en
+#+TAGS: IMPORTANT(i) TEST(t) DEPRECATED(d) noexport(n)
+
+* Project Overview
+This project aims at providing an efficient multi-threaded
+implementation of the QuickSort algorithm on multi-core machines. This
+document contains my attempts to evaluate the performance of an
+implementation of such code.
+* General Organization
+** src/
+This directory comprises the parallel implementation and a standard
+Makefile to compile it.
+** data/
+This is where raw experimental data should go. Each directory entry
+comprises a set of experiments and the directory name is based on the
+machine name and on the date. For example:
+#+begin_src sh :results output :exports both 
+echo mkdir data/`hostname`_`date +%F`
+#+end_src
+
+#+RESULTS:
+: mkdir data/sama_2014-10-13
+
+* Typical usage
+** Compilation
+A simple makefile with various compilation options is provided in the
+src/ directory. Compilation is thus done by running the following command:
+#+begin_src sh :results output :exports both 
+make -C src/
+#+end_src
+** Running the code
+The code is quite simple at the moment and can be run in the following way:
+#+begin_src
+./src/quicksort [1000000]
+#+end_src
+* Experimental Reports
+** 2014-10-13
+*** Initial code design
+- I obtained an initial implementation from
+  http://sc12.supercomputing.org/hpceducator/PythonForParallelism/codes/parallelQuicksort.c.
+  According to the header, the original author is Joshua Stough from
+  Washington and Lee University. I hope he will not mind that I reuse
+  this piece of code for educational purposes.
+- Here is a typical first execution on my laptop (an Intel(R) Core(TM)
+  i7 running a Debian with Linux 3.14.15):
+  #+begin_src sh :results output :exports both 
+    ./src/quicksort
+  #+end_src
+
+  #+RESULTS:
+  : Sequential quicksort took: 0.231571 sec.
+  : at loc 506315, 5.068226e-01 < 5.068269e-01 
+  : Oops, lyst did not get sorted by parallelQuicksort.
+  : Parallel quicksort took: 0.161259 sec.
+  : Built-in qsort took: 0.241568 sec.
+
+  Sweet, in my first attempt, it looks like this parallel version is
+  indeed running faster than then sequential one. I have to say this
+  warning message is stressing me a bit though.

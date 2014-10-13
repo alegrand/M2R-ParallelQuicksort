@@ -1,3 +1,10 @@
+# Temporary files
+*~
+\#*\#
+journal.html
+journal.pdf
+journal.tex
+
 # Object files
 *.o
 *.ko
@@ -27,3 +34,4 @@
 *.i*86
 *.x86_64
 *.hex
+src/quicksort
