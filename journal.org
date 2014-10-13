@@ -32,10 +32,17 @@ src/ directory. Compilation is thus done by running the following command:
 #+begin_src sh :results output :exports both 
 make -C src/
 #+end_src
+
+#+RESULTS:
+: make: Entering directory '/home/alegrand/Work/Documents/Enseignements/M2R_Eval_Perf_13/M2R-ParallelQuicksort/src'
+: cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  -c -o parallelQuicksort.o parallelQuicksort.c
+: cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  parallelQuicksort.o  -o parallelQuicksort 
+: make: Leaving directory '/home/alegrand/Work/Documents/Enseignements/M2R_Eval_Perf_13/M2R-ParallelQuicksort/src'
+
 ** Running the code
 The code is quite simple at the moment and can be run in the following way:
 #+begin_src
-./src/quicksort [1000000]
+./src/parallelQuicksort [1000000]
 #+end_src
 * Experimental Reports
 ** 2014-10-13
@@ -61,3 +68,17 @@ The code is quite simple at the moment and can be run in the following way:
   Sweet, in my first attempt, it looks like this parallel version is
   indeed running faster than then sequential one. I have to say this
   warning message is stressing me a bit though.
+- On smaller instances, the code would segfault. So I reindented the
+  code and thanks to valgrind and gdb, I could find what was wrong. I
+  also renamed the file so that compiling is more convenient. This
+  fixed the previous warning message so now everything seems fine:
+  #+begin_src sh :results output :exports both 
+    ./src/parallelQuicksort
+  #+end_src
+
+  #+RESULTS:
+  : Sequential quicksort took: 0.239347 sec.
+  : Parallel quicksort took: 0.176365 sec.
+  : Built-in quicksort took: 0.244716 sec.
+
+

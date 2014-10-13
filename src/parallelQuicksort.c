@@ -30,7 +30,7 @@ int isSorted(double lyst[], int size);
 
 //for parallel implementation
 void parallelQuicksort(double lyst[], int size, int tlevel);
-void *parallelQuicksortHelper(void *threadarg);
+void *parallelQuicksortHelper(void *threadarg) __attribute__ ((noreturn));
 struct thread_data {
   double *lyst;
   int low;
@@ -122,9 +122,7 @@ int main(int argc, char *argv[])
   //Compute time difference.
   diff = ((end.tv_sec * 1000000 + end.tv_usec)
           - (start.tv_sec * 1000000 + start.tv_usec)) / 1000000.0;
-  printf("Built-in qsort took: %lf sec.\n", diff);
-
-
+  printf("Built-in quicksort took: %lf sec.\n", diff);
 
   free(lyst);
   free(lystbck);
@@ -155,7 +153,7 @@ void swap(double lyst[], int i, int j)
 int partition(double lyst[], int lo, int hi)
 {
   int b = lo;
-  int r = (int) (lo + (hi - lo + 1) * (1.0 * rand() / RAND_MAX));
+  int r = (int) (lo + (hi - lo) * (1.0 * rand() / RAND_MAX));
   double pivot = lyst[r];
   swap(lyst, r, hi);
   for (int i = lo; i < hi; i++) {
@@ -229,7 +227,7 @@ void *parallelQuicksortHelper(void *threadarg)
   //printf("Thread responsible for [%d, %d], level %d.\n",
   //              my_data->low, my_data->high, my_data->level);
 
-  if (my_data->level <= 0 || my_data->low == my_data->high) {
+  if (my_data->level <= 0 || my_data->low == my_data->high+1) {
     //We have plenty of threads, finish with sequential.
     quicksortHelper(my_data->lyst, my_data->low, my_data->high);
     pthread_exit(NULL);

@@ -34,4 +34,4 @@ journal.tex
 *.i*86
 *.x86_64
 *.hex
-src/quicksort
+src/parallelQuicksort
