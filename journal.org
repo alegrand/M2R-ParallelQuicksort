@@ -176,7 +176,7 @@ So let's try to parse in an other way and use gnuplot:
   }
 #+end_src
 
-#+begin_src sh :results output :exports both 
+#+begin_src sh :results output raw :exports both 
   FILENAME="data/sama_2014-10-13/measurements_03:47"
   perl scripts/csv_quicksort_extractor2.pl < "$FILENAME.txt" > "${FILENAME}_wide.csv"
   echo "
@@ -190,7 +190,7 @@ So let's try to parse in an other way and use gnuplot:
 #+end_src
 
 #+RESULTS:
-: [[file:data/sama_2014-10-13/measurements_03:47_wide.png]]
+[[file:data/sama_2014-10-13/measurements_03:47_wide.png]]
 
 Well, I'm not sure it is nicer but I have lines. A first crude
 analysis seems to reveal the the parallel version is worth it for
