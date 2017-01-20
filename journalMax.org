@@ -98,7 +98,7 @@ echo [[file:${FILENAME}_wide.png]]
 #+end_src
 
 #+RESULTS:
-: [[file:data/chevamax-Satellite-Pro-R50-B_2017-01-19/measurements_14:39_wide.png]]
+[[file:data/chevamax-Satellite-Pro-R50-B_2017-01-19/measurements_14:39_wide.png]]
 
 ** Analyse
 C'est pas mieux ...
