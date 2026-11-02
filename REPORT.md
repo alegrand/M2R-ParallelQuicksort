@@ -1,28 +1,28 @@
 # Final Performance Evaluation: Multi-Threaded Quicksort
 
 ### 1. Experimental Design and Statistical Rigor
-The original benchmarking protocol was deeply flawed. Relying on just five repetitions per size leaves too much room for system noise and background processes to corrupt the data. We upgraded the experimental design by executing tiered repetition benchmarks (25, 50, and 100 iterations) for varying array sizes ranging from 1,000 up to a peak load of 5,000,000 elements. We also randomized the execution order to eliminate CPU thermal throttling biases
+The original benchmarking protocol mentioned in the project had many issues according to our observations. Only executing a test five times for each size can create system noise and background processes to compromise the integrity of the test. We modified the test to perform numerous repetitions (25, 50 and 100) for different array sizes ranging from 1,000 elements to a load of 5,000,000 elements. To account for thermal throttling of the CPU, we randomized the order of the tests as well.
 
-This sheer volume of data points allowed us to calculate strict 95 percent confidence intervals. In our primary visualization, the narrow shading around the continuous trend lines proves the variance across these 100 runs is minimal. The performance differences we mapped are statistically significant, not just isolated spikes.
+The huge volume of data captured allowed us to calculate relatively small 95% confidence intervals. The thin shading in the primary visualization represents the variance for 100 individual runs and demonstrates how small the variation was for each individual test. The differences in performance we illustrated were not isolated spikes, but were statistically significant.
 
 ![Performance Evaluation Plot](data/final_performance_plot.png)
 
 ### 2. Threshold Analysis and the 400,000 Claim
-The initial hypothesis claimed the parallel implementation would save significant time by crossing over the sequential baseline around the 400,000 element mark. The actual data shows this threshold is entirely dictated by the hardware architecture. 
+The initial theory told us that the parallel implementation would cross over the sequential baseline at around 400,000 elements. The data also suggested that the hardware architecture is the primary factor dictating where this threshold occurs.
 
-On consumer-grade laptops with unified memory (Mac M1, M4, and M4 Pro), the parallel algorithm clearly overtakes both the sequential and libc implementations well before 500,000 elements. The Windows machine validates this trend as well, though the crossover happens slightly later. However, on the Linux Xeon server, the parallel code never achieves a crossover. It consistently lags behind the single-threaded baselines at every single size.
+On the Mac laptops with unified memory (M1, M4, and M4 Pro), the parallel algorithm outweighs sequential and libc implementations before 500,000 elements. The Windows laptop also supports this phenomenon, but the cross over occurs at a larger element size. On the contrary, the parallel code on the Linux Xeon server never crosses over the single-threaded baselines of any size.
 
 ### 3. Continuous Trends and Extrapolation
-By mapping the execution time against the array size on a logarithmic scale, we can accurately predict performance beyond our 5,000,000 element ceiling. On the consumer machines, the continuous trend line for the parallel algorithm flattens out favorably. If we extrapolate this trajectory to 20,000,000 elements, the parallel version would scale efficiently and compound the time savings. 
+If we scale array sizes to the power of 2, we can generate an accurate prediction of performance beyond the 5,000,000 element limit. On the machines, the trend line for the parallel implementation favors positive slope and closely approaches the baseline at larger element sizes. It is rational to presume that this favorable trend line would continue and the parallel implementation of the algorithm would approach the baseline at even larger element sizes.
 
-The Xeon server presents a completely different reality. Its continuous trend line curves upward aggressively. Extrapolating the server data suggests catastrophic slowdowns for the parallel code at larger scales.
+We might expect the Xeon server to behave similarly to the other machines, but this is not the case. The Xeon server parallel trend line aggressively curves upward. It is rational to expect that the parallel implementation of the algorithm on the Xeon server would approach the baseline, but at very large element sizes, the approach would be very inefficient and time savings would be severely compounded.
 
 ### 4. Hardware Architecture and The Server Penalty
-The most critical finding of this project is the massive performance failure on the Linux Xeon machine, which is definitively visualized in the graphic below. At the 5,000,000 peak load, the green parallel bar dwarfs the sequential and libc bars on the Linux server, while it remains the shortest bar on every other machine. 
+The biggest discovery we had of this project was the massive performance failure of the Linux Xeon machine, which is illustrated in the below graph. At a peak load of 5,000,000, the green parallel bar dominates the Linux server performance graph. It is also the shortest bar on all the other machines.
 
 ![Execution Time at 5,000,000 Array Size](data/5M_array_comparison.png)
 
-It is a common misconception that a server's powerful specifications or GPU will automatically accelerate all workloads. This specific quicksort implementation runs entirely on the CPU. The server's poor performance comes down to thread management overhead. Enterprise server chips like the Xeon often feature multiple physical processors spread across complex memory zones. The operating system expends far more time and energy creating, synchronizing, and destroying threads across these zones than the algorithm saves by dividing the array. The standard sequential and libc versions avoid this overhead entirely by blasting through the array on a single core.
+It is a common perception that a powerful server specifications or GPU will speed up all workloads. This particular quicksort implementation runs entirely on the CPU, so the server’s poor performance is due to thread management overhead despite having the most powerful GPU. Enterprise servers like Xeon have multiple physical processors which are further spread across multiple memory zones. Compared to the time saved by breaking the array into smaller pieces to quicksort, the OS has to do a lot of work to create and manage threads across memory zones. The array could be quicksorted using the standard library (libc) implementation and still be faster than the custom threaded implementation.
 
 ### 5. Final Verdict
-The custom multi-threaded quicksort is too volatile for general adoption. While it produces impressive speedups on consumer laptops with unified memory architecture, it breaks down completely on standard enterprise servers. Because the code is highly hardware-dependent, it should not replace the universally stable, highly optimized libc qsort in a general production environment.
+Due to its volatile nature, the custom multi-threaded quicksort cannot be generally adopted. This quicksort breaks down on enterprise servers. Due to its hardware dependency, it should not be used to replace the libc qsort in a general production environment.
